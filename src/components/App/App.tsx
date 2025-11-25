@@ -1,67 +1,88 @@
 import css from './App.module.css'
 import { useState } from 'react';
-import Product from '../Product/Product'
-import Modal from "../Modal/Modal"
-import OrderForm from '../OrderForm/OrderForm'
-// import ReactPaginate from 'react-paginate';
-
-// const myKey = import.meta.env.VITE_API_KEY;
+import { useQuery, keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchNotes, createNote, deleteNote } from '../../services/noteService'
+import NoteList from '../NoteList/NoteList'
+import Pagination from '../Pagination/Pagination'
+import Modal from '../Modal/Modal'
+import NoteForm from '../NoteForm/NoteForm'
+import SearchBox from '../SearchBox/SearchBox'
+import Loader from '../Loader/Loader'
+import ErrorMessage from '../ErrorMessage/ErrorMessage'
+import type { Note } from '../../types/note'
+import { useDebouncedCallback } from 'use-debounce';
 
 export default function App() {
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const openModal = () => setIsModalOpen(true);
+  const queryClient = useQueryClient();
+
+  const perPage = 12;
 
   const closeModal = () => setIsModalOpen(false);
+  const openModal = () => setIsModalOpen(true);
 
-  // const [topic, setTopic] = useState('');
-  // const [currentPage, setCurrentPage] = useState(1);
+  const { data, isSuccess, isLoading, isError } = useQuery({
+    queryKey: ['notes', page, search, perPage],
+    queryFn: () => fetchNotes({ search, page, perPage }),
+    placeholderData: keepPreviousData,
+  });
 
-  // const { data, isLoading, isError, isSuccess } = useQuery({
-  //   queryKey: ['articles', topic, currentPage],
-  //   queryFn: () => fetchArticles(topic, currentPage),
-  //   enabled: topic !== '',
-  //   placeholderData: keepPreviousData,
-  // });
+  const totalPages = data?.totalPages ?? 0;
 
-  // const totalPages = data?.nbPages ?? 0;
+  const handlePagination = ({ selected }: { selected: number }) => setPage(selected + 1);
+  
+  
+  const mutation = useMutation({
+    mutationFn: (newNote: Note) => createNote(newNote),
+    onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['notes'] });
+      closeModal();
+    }
+  });
+  
+  const handleCreateNote = ({id, title, content, tag}: Note) => {
+	  mutation.mutate({
+      id,
+      title, 
+      content, 
+      tag
+    })
+  };
 
-  // const handleSearch = async (newTopic: string) => {
-  //   setTopic(newTopic);
-  //   setCurrentPage(1);
-  // };
+   const mutationDelete = useMutation({
+    mutationFn: (id: string) => deleteNote(id),
+    onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['notes'] });
+    }
+  });
+  
+  const handleDeleteNote = (id: string) => {
+	  mutationDelete.mutate(id)
+  };
+
+  const handleSearchBox = useDebouncedCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {     
+      setPage(1);
+      setSearch(e.target.value);
+    },
+    300
+  );
 
   return (
-    <>
-      <h1 className={css.title}>Products</h1>
-      {/* <ReactPaginate
-          pageCount={totalPages}
-          pageRangeDisplayed={5}
-          marginPagesDisplayed={1}
-          onPageChange={({ selected }) => setCurrentPage(selected + 1)}
-          forcePage={currentPage - 1}
-          containerClassName={css.pagination}
-          activeClassName={css.active}
-          nextLabel="→"
-          previousLabel="←"
-        /> */}
-      {/* {isLoading && <p>Loading data, please wait...</p>} */}
-      {/* {isError && <p>Whoops, something went wrong! Please try again!</p>} */}
-      <Product
-        name="Tacos With Lime"
-        imgUrl="https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?w=640"
-        price={10.99}
-      />
-      <Product
-        name="Fries and Burger"
-        imgUrl="https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg?w=640"
-        price={14.29}
-      />
-      <OrderForm />
-      <button onClick={openModal}>Open modal</button>
-      {isModalOpen && <Modal onClose={closeModal}><h2>Custom Modal Content</h2>
-          <p>This is a reusable modal with dynamic content.</p></Modal>}
-    </>
+      <div className={css.app}>
+	      <header className={css.toolbar}>
+		      <SearchBox onChange={(e) => handleSearchBox(e)}/> 
+		      { isSuccess && (totalPages > 1) && <Pagination totalPages={totalPages} page={page} onChange={handlePagination}/>}
+		      <button className={css.button} onClick={openModal}>Create note +</button>
+        </header>
+        {isLoading && <Loader />}
+        {isError && <ErrorMessage/>}
+        {data && (data.notes.length > 0) && <NoteList notes={data.notes} onClick={handleDeleteNote}/>}
+        {isModalOpen && <Modal onClose={closeModal}><NoteForm onSuccess={handleCreateNote}/></Modal>}
+      </div>
   )
 }
 
