@@ -14,6 +14,7 @@ import NoteForm from "../NoteForm/NoteForm";
 import SearchBox from "../SearchBox/SearchBox";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import { Toaster } from 'react-hot-toast';
 import type { Note } from "../../types/note";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -79,6 +80,7 @@ export default function App() {
 
   return (
     <div className={css.app}>
+      <Toaster position='top-center'/>
       <header className={css.toolbar}>
         <SearchBox onChange={(e) => handleSearchBox(e)} />
         {isSuccess && totalPages > 1 && (

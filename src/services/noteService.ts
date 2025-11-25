@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type {Note, NoteTag} from '../types/note'
+import { toast } from 'react-hot-toast';
 
 interface FetchNotesResponse {
     notes: Note[];
@@ -47,6 +48,10 @@ export async function fetchNotes({search, page, perPage}: FetchNotesProps) {
             }
         }
     );
+    if (response.data.notes.length === 0) {
+        toast.error('No notes found for your request');
+    }
+
     return response.data;
     }
 };
