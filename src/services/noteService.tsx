@@ -53,7 +53,7 @@ export async function fetchNotes({search, page, perPage}: FetchNotesProps) {
 
 export async function createNote({title, content, tag}: CreateNoteProps) {
     const response = await axios.post(
-      "https://notehub-public.goit.study/api/notes",
+      'https://notehub-public.goit.study/api/notes',
       {
         title,
         content,

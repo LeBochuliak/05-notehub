@@ -16,7 +16,7 @@ export default function Pagination({ totalPages, page, onChange }: PaginationPro
             forcePage={page - 1}
             containerClassName={css.pagination}
             activeClassName={css.active}
-            nextLabel="→"
-            previousLabel="←"
+            nextLabel='→'
+            previousLabel='←'
         />
 }
