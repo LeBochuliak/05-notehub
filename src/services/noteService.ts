@@ -12,9 +12,6 @@ interface CreateNoteProps {
     tag: NoteTag
 }
 
-interface NoteResponse {
-    note: Note;
-}
 
 interface FetchNotesProps {
     search: string,
@@ -38,7 +35,6 @@ export async function fetchNotes({search, page, perPage}: FetchNotesProps): Prom
             }
         }
     );
-
     return response.data;
     
     } else {
@@ -56,8 +52,8 @@ export async function fetchNotes({search, page, perPage}: FetchNotesProps): Prom
     }
 };
 
-export async function createNote({title, content, tag}: CreateNoteProps): Promise<NoteResponse> {
-    const response = await axios.post<NoteResponse>(
+export async function createNote({title, content, tag}: CreateNoteProps): Promise<Note> {
+    const response = await axios.post<Note>(
       'https://notehub-public.goit.study/api/notes',
       {
         title,
@@ -69,8 +65,8 @@ export async function createNote({title, content, tag}: CreateNoteProps): Promis
     return response.data;
 }
 
-export async function deleteNote( id : string): Promise<NoteResponse> {
-    const response = await axios.delete<NoteResponse>(
+export async function deleteNote( id : string): Promise<Note> {
+    const response = await axios.delete<Note>(
       `https://notehub-public.goit.study/api/notes/${id}`
     );
 
