@@ -12,6 +12,7 @@ import { createNote } from "../../services/noteService"
 
 interface NoteFormProps {
   onClick: () => void;
+  onSuccess: () => void;
 }
 
 interface OrderFormValues {
@@ -37,7 +38,7 @@ const validationSchema = Yup.object().shape({
     .required("Tag is required"),
 });
 
-export default function NoteForm({ onClick }: NoteFormProps) {
+export default function NoteForm({ onClick, onSuccess }: NoteFormProps) {
 
   const queryClient = useQueryClient();
 
@@ -45,6 +46,7 @@ export default function NoteForm({ onClick }: NoteFormProps) {
     mutationFn: (newNote: Note) => createNote(newNote),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      onSuccess();
     },
   });
 

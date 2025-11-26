@@ -51,6 +51,10 @@ export default function App() {
     300
   );
 
+  const handleNoteForm = () => {
+    setSearch("");
+    closeModal();
+  }
   return (
     <div className={css.app}>
       <Toaster position='top-center'/>
@@ -74,7 +78,7 @@ export default function App() {
       )}
       {isModalOpen && (
         <Modal onClose={closeModal}>
-          <NoteForm onClick={closeModal}/>
+          <NoteForm onClick={closeModal} onSuccess={handleNoteForm}/>
         </Modal>
       )}
     </div>
