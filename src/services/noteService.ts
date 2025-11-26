@@ -1,6 +1,5 @@
 import axios from 'axios'
 import type {Note, NoteTag} from '../types/note'
-import { toast } from 'react-hot-toast';
 
 interface FetchNotesResponse {
     notes: Note[];
@@ -9,8 +8,12 @@ interface FetchNotesResponse {
 
 interface CreateNoteProps {
     title: string, 
-    content: string, 
+    content: string | null, 
     tag: NoteTag
+}
+
+interface NoteResponse {
+    note: Note;
 }
 
 interface FetchNotesProps {
@@ -24,7 +27,7 @@ const myKey = import.meta.env.VITE_NOTEHUB_TOKEN;
 
 axios.defaults.headers.common['Authorization'] = `Bearer ${myKey}`;
 
-export async function fetchNotes({search, page, perPage}: FetchNotesProps) { 
+export async function fetchNotes({search, page, perPage}: FetchNotesProps): Promise<FetchNotesResponse>{ 
     
     if (search === '') {
         const response = await axios.get<FetchNotesResponse>('https://notehub-public.goit.study/api/notes', 
@@ -48,16 +51,13 @@ export async function fetchNotes({search, page, perPage}: FetchNotesProps) {
             }
         }
     );
-    if (response.data.notes.length === 0) {
-        toast.error('No notes found for your request');
-    }
 
     return response.data;
     }
 };
 
-export async function createNote({title, content, tag}: CreateNoteProps) {
-    const response = await axios.post(
+export async function createNote({title, content, tag}: CreateNoteProps): Promise<NoteResponse> {
+    const response = await axios.post<NoteResponse>(
       'https://notehub-public.goit.study/api/notes',
       {
         title,
@@ -65,12 +65,12 @@ export async function createNote({title, content, tag}: CreateNoteProps) {
         tag,
       }
     );
-
+    
     return response.data;
 }
 
-export async function deleteNote( id : string) {
-    const response = await axios.delete(
+export async function deleteNote( id : string): Promise<NoteResponse> {
+    const response = await axios.delete<NoteResponse>(
       `https://notehub-public.goit.study/api/notes/${id}`
     );
 

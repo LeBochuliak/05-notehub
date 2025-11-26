@@ -1,5 +1,5 @@
 import css from "./App.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useQuery,
   keepPreviousData,
@@ -17,6 +17,7 @@ import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import { Toaster } from 'react-hot-toast';
 import type { Note } from "../../types/note";
 import { useDebouncedCallback } from "use-debounce";
+import { toast } from 'react-hot-toast';
 
 export default function App() {
   const [search, setSearch] = useState("");
@@ -36,6 +37,12 @@ export default function App() {
     placeholderData: keepPreviousData,
   });
 
+  useEffect(() => {
+    if (isSuccess && data?.notes?.length === 0) {
+      toast.error("No notes found for your request");
+    }
+  }, [isSuccess, data]);
+
   const totalPages = data?.totalPages ?? 0;
 
   const handlePagination = ({ selected }: { selected: number }) =>
@@ -50,25 +57,12 @@ export default function App() {
     },
   });
 
-  const handleCreateNote = ({ id, title, content, tag }: Note) => {
-    mutation.mutate({
-      id,
-      title,
-      content,
-      tag,
-    });
-  };
-
   const mutationDelete = useMutation({
     mutationFn: (id: string) => deleteNote(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
   });
-
-  const handleDeleteNote = (id: string) => {
-    mutationDelete.mutate(id);
-  };
 
   const handleSearchBox = useDebouncedCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,11 +91,11 @@ export default function App() {
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
       {data && data.notes.length > 0 && (
-        <NoteList notes={data.notes} onClick={handleDeleteNote} />
+        <NoteList notes={data.notes} mutate={mutationDelete.mutate} />
       )}
       {isModalOpen && (
         <Modal onClose={closeModal}>
-          <NoteForm onSuccess={handleCreateNote} />
+          <NoteForm mutate={mutation.mutate} isLoading={mutation.isPending} onClick={closeModal}/>
         </Modal>
       )}
     </div>

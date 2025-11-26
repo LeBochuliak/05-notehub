@@ -3,10 +3,10 @@ import type { Note } from "../../types/note";
 
 interface NoteListProps {
   notes: Note[];
-  onClick: (id: string) => void;
+  mutate: (id: string) => void;
 }
 
-export default function NoteList({ notes, onClick }: NoteListProps) {
+export default function NoteList({ notes, mutate }: NoteListProps) {
   return (
     <ul className={css.list}>
       {notes.map((note) => (
@@ -15,7 +15,7 @@ export default function NoteList({ notes, onClick }: NoteListProps) {
           <p className={css.content}>{note.content}</p>
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
-            <button className={css.button} onClick={() => onClick(note.id)}>
+            <button className={css.button} onClick={() => mutate(note.id)}>
               Delete
             </button>
           </div>

@@ -6,7 +6,9 @@ import * as Yup from "yup";
 import type { NoteTag, Note } from "../../types/note";
 
 interface NoteFormProps {
-  onSuccess: ({ id, title, content, tag }: Note) => void;
+  mutate: (data: Note) => void;
+  isLoading: boolean;
+  onClick: () => void;
 }
 
 interface OrderFormValues {
@@ -32,14 +34,15 @@ const validationSchema = Yup.object().shape({
     .required("Tag is required"),
 });
 
-export default function NoteForm({ onSuccess }: NoteFormProps) {
+export default function NoteForm({ mutate,
+  isLoading, onClick }: NoteFormProps) {
   const handleSubmit = (
     values: OrderFormValues,
     actions: FormikHelpers<OrderFormValues>
   ) => {
     const id = crypto.randomUUID();
     actions.resetForm();
-    onSuccess({ id, ...values });
+    mutate({ id, ...values });
   };
 
   const fieldId = useId();
@@ -50,7 +53,7 @@ export default function NoteForm({ onSuccess }: NoteFormProps) {
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
     >
-      {({ isSubmitting, isValid, dirty }) => (
+      {
         <Form className={css.form}>
           <div className={css.formGroup}>
             <label className={css.label} htmlFor={`${fieldId}-title`}>
@@ -106,19 +109,19 @@ export default function NoteForm({ onSuccess }: NoteFormProps) {
           </div>
 
           <div className={css.actions}>
-            <button type="button" className={css.cancelButton}>
+            <button type="button" className={css.cancelButton} onClick={onClick}>
               Cancel
             </button>
             <button
               type="submit"
               className={css.submitButton}
-              disabled={!(isValid && dirty) || isSubmitting}
+              disabled={isLoading}
             >
               Create note
             </button>
           </div>
         </Form>
-      )}
+      }
     </Formik>
   );
 }
