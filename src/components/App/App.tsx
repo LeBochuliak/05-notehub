@@ -48,7 +48,7 @@ export default function App() {
       setPage(1);
       setSearch(e.target.value);
     },
-    300
+    1000
   );
 
   const handleNoteForm = () => {

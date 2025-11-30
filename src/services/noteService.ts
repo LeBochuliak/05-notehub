@@ -14,7 +14,7 @@ interface CreateNoteProps {
 
 
 interface FetchNotesProps {
-    search: string,
+    search?: string,
     page: number, 
     perPage: number
 }
@@ -26,38 +26,29 @@ axios.defaults.headers.common['Authorization'] = `Bearer ${myKey}`;
 
 export async function fetchNotes({search, page, perPage}: FetchNotesProps): Promise<FetchNotesResponse>{ 
     
-    if (search === '') {
-        const response = await axios.get<FetchNotesResponse>('https://notehub-public.goit.study/api/notes', 
+    const response = await axios.get<FetchNotesResponse>(
+        'https://notehub-public.goit.study/api/notes',
         {
             params: {
+                search,   
                 page,
                 perPage,
             }
         }
     );
-    return response.data;
     
-    } else {
-        const response = await axios.get<FetchNotesResponse>('https://notehub-public.goit.study/api/notes', 
-        {
-            params: {
-                search,
-                page,
-                perPage,
-            }
-        }
-    );
-
     return response.data;
-    }
 };
 
 export async function createNote({title, content, tag}: CreateNoteProps): Promise<Note> {
+    
+    const normalizedContent = content ?? "";
+
     const response = await axios.post<Note>(
       'https://notehub-public.goit.study/api/notes',
       {
         title,
-        content,
+        content: normalizedContent,
         tag,
       }
     );
